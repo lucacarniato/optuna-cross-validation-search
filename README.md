@@ -4,7 +4,7 @@ Performing hyperparameter search for models implementing the scikit-learn model 
 
 # Examples
 
-In the following example the hyperparameters of a [lightgbm](https://lightgbm.readthedocs.io/en/latest/) classifier are estimated
+In the following example, the hyperparameters of a [lightgbm](https://lightgbm.readthedocs.io/en/latest/) classifier are estimated:
 
         from OptunaCrossValidationSearch import OptunaCrossValidationSearch
         import lightgbm as lgb
@@ -21,8 +21,10 @@ In the following example the hyperparameters of a [lightgbm](https://lightgbm.re
         y_test_pred = optuna_cross_validation.predict(X_test)
         score = sklearn.metrics.accuracy_score(y_test, y_test_pred)
 
-In the following example, the hyperparameters of a tensorflow deep learning model are estimated. 
-A callback function is used to stop the fitting when the validation accuracy does not improve after 50 epochs.
+In the following example, the hyperparameters of a Keras deep learning model are estimated. 
+In this case the number of tunable parameters is not fixed, and the Keras model is wrapped in the ModelKerasFullyConnected class.
+ModelKerasFullyConnected derives from ModelKeras base class, where the methods are defined. 
+During cross-validation of a keras model, a callback function is used to stop fitting the model when the validation accuracy does not improve after 50 epochs.
 
         from OptunaCrossValidationSearch import OptunaCrossValidationSearch
         from ModelKerasFullyConnected import ModelKerasFullyConnected

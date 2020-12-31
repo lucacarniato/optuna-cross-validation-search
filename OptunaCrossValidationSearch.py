@@ -13,12 +13,12 @@ _logger = optuna.logging.get_logger(__name__)
 
 class Objective:
 
-    def __init__(self, clf, parameter_distributions, cv, X, y, class_weights, sample_weights):
-        self.clf = clf
+    def __init__(self, classifier, parameter_distributions, cv, X, Y, class_weights, sample_weights):
+        self.classifier = classifier
         self.parameter_distributions = parameter_distributions
         self.cv = cv
         self.X = X
-        self.y = y
+        self.y = Y
         self.class_weights = class_weights
         self.sample_weights = sample_weights
 
@@ -32,16 +32,16 @@ class Objective:
             train_x_fold, train_y_fold = self.X[X_train], self.y[X_train]
             test_x_fold, test_y_fold = self.X[X_test], self.y[X_test]
 
-            self.clf.set_params(**parameters)
+            self.classifier.set_params(**parameters)
 
-            if hasattr(self.clf, "name") and self.clf.name == "keras_model":
-                self.clf.fit(train_x_fold, train_y_fold, self.class_weights, test_x_fold, test_y_fold)
+            if hasattr(self.classifier, "name") and self.classifier.name == "keras_model":
+                self.classifier.fit(train_x_fold, train_y_fold, self.class_weights, test_x_fold, test_y_fold)
             else:
                 # clone un-fit classifier
-                self.clf = clone(self.clf)
-                self.clf.fit(train_x_fold, train_y_fold, sample_weight=self.sample_weights[X_train])
+                self.classifier = clone(self.classifier)
+                self.classifier.fit(train_x_fold, train_y_fold, sample_weight=self.sample_weights[X_train])
 
-            test_y_fold_pred = self.clf.predict(test_x_fold)
+            test_y_fold_pred = self.classifier.predict(test_x_fold)
             score -= accuracy_score(test_y_fold, test_y_fold_pred)
 
         return score / self.cv
@@ -79,17 +79,17 @@ class OptunaCrossValidationSearch:
 
         return optuna.create_study(study_name=study_name, load_if_exists=True, storage=storage)
 
-    def fit(self, X, y):
+    def fit(self, X, Y):
 
         X = np.array(X)
-        y = np.array(y)
+        Y = np.array(Y)
 
-        unique_values = np.unique(y)
-        class_weights = class_weight.compute_class_weight(self.sample_weight_balance, unique_values, y)
+        unique_values = np.unique(Y)
+        class_weights = class_weight.compute_class_weight(self.sample_weight_balance, unique_values, Y)
         class_weights = {i: class_weights[i] for i in range(len(unique_values))}
 
-        sample_weights = np.zeros(len(y), dtype=np.float)
-        for i, val in enumerate(y):
+        sample_weights = np.zeros(len(Y), dtype=np.float)
+        for i, val in enumerate(Y):
             for j, unique_val in enumerate(unique_values):
                 if val == unique_val:
                     sample_weights[i] = class_weights[j]
@@ -99,7 +99,7 @@ class OptunaCrossValidationSearch:
                               self.parameter_distributions,
                               self.cv_folds,
                               X,
-                              y,
+                              Y,
                               class_weights,
                               sample_weights)
 
@@ -115,9 +115,9 @@ class OptunaCrossValidationSearch:
         self.classifier.set_params(**study.best_params)
 
         if hasattr(self.classifier, "name") and self.classifier.name == "keras_model":
-            self.classifier.fit(X, y, class_weight=class_weights)
+            self.classifier.fit(X, Y, class_weight=class_weights)
         else:
-            self.classifier.fit(X, y)
+            self.classifier.fit(X, Y)
 
         return self
 
