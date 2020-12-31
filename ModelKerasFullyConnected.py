@@ -7,8 +7,6 @@ class ModelKerasFullyConnected(ModelKerasBase):
 
     def set_params(self, num_units, num_hidden, learning_rate, dropout):
 
-        tf.keras.backend.clear_session()
-
         self.model = tf.keras.models.Sequential()
         self.model.add(tf.keras.layers.Dense(num_units, activation='relu'))
         self.model.add(tf.keras.layers.Dropout(dropout))

@@ -10,12 +10,12 @@ import os
 
 class Objective:
 
-    def __init__(self, classifier, parameter_distributions, cv, X, Y, class_weights, sample_weights):
+    def __init__(self, classifier, parameter_distributions, cv, X, y, class_weights, sample_weights):
         self.classifier = classifier
         self.parameter_distributions = parameter_distributions
         self.cv = cv
         self.X = X
-        self.y = Y
+        self.y = y
         self.class_weights = class_weights
         self.sample_weights = sample_weights
 
@@ -38,8 +38,8 @@ class Objective:
                 self.classifier = clone(self.classifier)
                 self.classifier.fit(train_x_fold, train_y_fold, sample_weight=self.sample_weights[X_train])
 
-            test_y_fold_pred = self.classifier.predict(test_x_fold)
-            score -= accuracy_score(test_y_fold, test_y_fold_pred)
+            test_y_fold_pred = self.classifier.predict(X=test_x_fold)
+            score -= accuracy_score(y_true = test_y_fold, y_pred = test_y_fold_pred)
 
         return score / self.cv
 
@@ -77,17 +77,17 @@ class OptunaCrossValidationSearch:
 
         return optuna.create_study(study_name=study_name, load_if_exists=True, storage=storage)
 
-    def fit(self, X, Y):
+    def fit(self, X, y):
 
         X = np.array(X)
-        Y = np.array(Y)
+        y = np.array(y)
 
-        unique_values = np.unique(Y)
-        class_weights = class_weight.compute_class_weight(self.sample_weight_balance, unique_values, Y)
+        unique_values = np.unique(y)
+        class_weights = class_weight.compute_class_weight(self.sample_weight_balance, unique_values, y)
         class_weights = {i: class_weights[i] for i in range(len(unique_values))}
 
-        sample_weights = np.zeros(len(Y), dtype=np.float)
-        for i, val in enumerate(Y):
+        sample_weights = np.zeros(len(y), dtype=np.float)
+        for i, val in enumerate(y):
             for j, unique_val in enumerate(unique_values):
                 if val == unique_val:
                     sample_weights[i] = class_weights[j]
@@ -97,7 +97,7 @@ class OptunaCrossValidationSearch:
                               self.parameter_distributions,
                               self.cv_folds,
                               X,
-                              Y,
+                              y,
                               class_weights,
                               sample_weights)
 
@@ -113,9 +113,9 @@ class OptunaCrossValidationSearch:
         self.classifier.set_params(**study.best_params)
 
         if hasattr(self.classifier, "name") and self.classifier.name == "keras_model":
-            self.classifier.fit(X, Y, class_weight=class_weights)
+            self.classifier.fit(X, y, class_weight=class_weights)
         else:
-            self.classifier.fit(X, Y, sample_weight=sample_weights)
+            self.classifier.fit(X, y, sample_weight=sample_weights)
 
         return self
 

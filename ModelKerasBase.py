@@ -14,6 +14,8 @@ class ModelKerasBase:
 
     def fit(self, X, y, class_weight, X_val = None, y_val = None):
 
+        tf.keras.backend.clear_session()
+
         if not(X_val is None) and not (y_val is None):
             callbacks = [EarlyStopping(monitor="val_accuracy", patience=50, mode="max", restore_best_weights=True)]
             self.model.fit(X,
