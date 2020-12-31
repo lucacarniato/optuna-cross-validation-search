@@ -69,7 +69,7 @@ def run_tests():
                                'dropout': optuna.distributions.LogUniformDistribution(0.05, 0.4),
                                'learning_rate': optuna.distributions.LogUniformDistribution(1e-8, 1e-4)}
 
-    optunaCrossValidation = OptunaCrossValidationSearch(clf, parameter_distributions, 5, 10, 'balanced')
+    optunaCrossValidation = OptunaCrossValidationSearch(clf, parameter_distributions, 5, 30, 'balanced')
     optunaCrossValidation.fit(X_train, y_train)
 
     y_test_pred = optunaCrossValidation.predict(X_test)

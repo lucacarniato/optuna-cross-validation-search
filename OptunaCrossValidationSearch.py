@@ -8,9 +8,6 @@ import optuna
 from pathlib import Path
 import os
 
-_logger = optuna.logging.get_logger(__name__)
-
-
 class Objective:
 
     def __init__(self, classifier, parameter_distributions, cv, X, Y, class_weights, sample_weights):
@@ -65,6 +62,7 @@ class OptunaCrossValidationSearch:
         self.cv_folds = cv_folds
         self.n_trials = n_trials
         self.sample_weight_balance = sample_weight_balance
+        #logging.basicConfig(level=logging.DEBUG, filename="log")
 
     def optuna_get_study(self, remove_storage=True):
 
@@ -105,11 +103,11 @@ class OptunaCrossValidationSearch:
 
         study = self.optuna_get_study(remove_storage=True)
 
-        _logger.info("Searching the best hyperparameters...")
+        print("Searching the best hyperparameters...")
 
         study.optimize(objective, n_trials=self.n_trials)
 
-        _logger.info("Finished searching...")
+        print("Finished searching the best hyperparameters...")
 
         study = self.optuna_get_study(remove_storage=False)
         self.classifier.set_params(**study.best_params)
@@ -117,7 +115,7 @@ class OptunaCrossValidationSearch:
         if hasattr(self.classifier, "name") and self.classifier.name == "keras_model":
             self.classifier.fit(X, Y, class_weight=class_weights)
         else:
-            self.classifier.fit(X, Y)
+            self.classifier.fit(X, Y, sample_weight=sample_weights)
 
         return self
 
