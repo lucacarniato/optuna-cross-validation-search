@@ -39,7 +39,7 @@ class Objective:
                 self.classifier = clone(self.classifier)
                 self.classifier.fit(train_x_fold, train_y_fold, sample_weight=self.sample_weights[X_train])
 
-            test_y_fold_pred = self.classifier.predict(X=test_x_fold)
+            test_y_fold_pred = self.classifier.predict(test_x_fold)
             score -= accuracy_score(y_true=test_y_fold, y_pred=test_y_fold_pred)
 
         return score / self.cv
@@ -115,9 +115,10 @@ class OptunaCrossValidationSearch:
         if hasattr(self.classifier, "name") and self.classifier.name == "keras_model":
             self.classifier.fit(x, y, class_weight=class_weights)
         else:
+            self.classifier = clone(self.classifier)
             self.classifier.fit(x, y, sample_weight=sample_weights)
 
         return self
 
-    def predict(self, X):
-        return self.classifier.predict(X)
+    def predict(self, x):
+        return self.classifier.predict(x)
