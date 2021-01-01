@@ -38,5 +38,5 @@ class ModelKerasBase:
         return np.argmax(self.model.predict(X), axis=-1)
 
     @abc.abstractmethod
-    def set_params(self, parameters):
+    def set_params(self, **parameters):
         return None

@@ -8,13 +8,14 @@ import optuna
 from pathlib import Path
 import os
 
+
 class Objective:
 
-    def __init__(self, classifier, parameter_distributions, cv, X, y, class_weights, sample_weights):
+    def __init__(self, classifier, parameter_distributions, cv, x, y, class_weights, sample_weights):
         self.classifier = classifier
         self.parameter_distributions = parameter_distributions
         self.cv = cv
-        self.X = X
+        self.x = x
         self.y = y
         self.class_weights = class_weights
         self.sample_weights = sample_weights
@@ -25,9 +26,9 @@ class Objective:
                       self.parameter_distributions.items()}
         score = 0.0
 
-        for X_train, X_test in KFold(self.cv, shuffle=False).split(self.X):
-            train_x_fold, train_y_fold = self.X[X_train], self.y[X_train]
-            test_x_fold, test_y_fold = self.X[X_test], self.y[X_test]
+        for X_train, X_test in KFold(self.cv, shuffle=False).split(self.x):
+            train_x_fold, train_y_fold = self.x[X_train], self.y[X_train]
+            test_x_fold, test_y_fold = self.x[X_test], self.y[X_test]
 
             self.classifier.set_params(**parameters)
 
@@ -39,7 +40,7 @@ class Objective:
                 self.classifier.fit(train_x_fold, train_y_fold, sample_weight=self.sample_weights[X_train])
 
             test_y_fold_pred = self.classifier.predict(X=test_x_fold)
-            score -= accuracy_score(y_true = test_y_fold, y_pred = test_y_fold_pred)
+            score -= accuracy_score(y_true=test_y_fold, y_pred=test_y_fold_pred)
 
         return score / self.cv
 
@@ -62,7 +63,6 @@ class OptunaCrossValidationSearch:
         self.cv_folds = cv_folds
         self.n_trials = n_trials
         self.sample_weight_balance = sample_weight_balance
-        #logging.basicConfig(level=logging.DEBUG, filename="log")
 
     def optuna_get_study(self, remove_storage=True):
 
@@ -77,9 +77,9 @@ class OptunaCrossValidationSearch:
 
         return optuna.create_study(study_name=study_name, load_if_exists=True, storage=storage)
 
-    def fit(self, X, y):
+    def fit(self, x, y):
 
-        X = np.array(X)
+        x = np.array(x)
         y = np.array(y)
 
         unique_values = np.unique(y)
@@ -96,7 +96,7 @@ class OptunaCrossValidationSearch:
         objective = Objective(self.classifier,
                               self.parameter_distributions,
                               self.cv_folds,
-                              X,
+                              x,
                               y,
                               class_weights,
                               sample_weights)
@@ -113,9 +113,9 @@ class OptunaCrossValidationSearch:
         self.classifier.set_params(**study.best_params)
 
         if hasattr(self.classifier, "name") and self.classifier.name == "keras_model":
-            self.classifier.fit(X, y, class_weight=class_weights)
+            self.classifier.fit(x, y, class_weight=class_weights)
         else:
-            self.classifier.fit(X, y, sample_weight=sample_weights)
+            self.classifier.fit(x, y, sample_weight=sample_weights)
 
         return self
 
