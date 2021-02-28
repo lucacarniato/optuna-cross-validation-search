@@ -1,8 +1,8 @@
 # Optuna cross validation search
 
-Performing hyperparameter search for models implementing the scikit-learn model interface by using cross-validation and the Bayesian framework [Optuna](https://github.com/optuna/optuna).
+Performing hyper-parameters search for models implementing the scikit-learn interface, by using cross-validation and the Bayesian framework [Optuna](https://github.com/optuna/optuna).
 
-# Examples
+# Usage examples
 
 In the following example, the hyperparameters of a [lightgbm](https://lightgbm.readthedocs.io/en/latest/) classifier are estimated:
 
@@ -10,6 +10,7 @@ In the following example, the hyperparameters of a [lightgbm](https://lightgbm.r
         import lightgbm as lgb
         
         classifier = lgb.LGBMClassifier(n_jobs=4)
+        # The parameters prior distributions
         parameter_distributions = {'min_data_in_leaf': optuna.distributions.IntUniformDistribution(10, 100),
                                    'bagging_fraction': optuna.distributions.LogUniformDistribution(0.01, 1.0)}
         optuna_cross_validation = OptunaCrossValidationSearch(classifier = classifier,
@@ -30,6 +31,7 @@ During cross-validation of a keras model, a callback function is used to stop fi
         from ModelKerasFullyConnected import ModelKerasFullyConnected
 
         classifier = ModelKerasFullyConnected.ModelKerasFullyConnected(X_train.shape, len(np.unique(y_train)))
+        # The parameters prior distributions
         parameter_distributions = {'num_units': optuna.distributions.IntUniformDistribution(32, 128),
                                    'num_hidden': optuna.distributions.IntUniformDistribution(0, 3),
                                    'dropout': optuna.distributions.LogUniformDistribution(0.05, 0.4),
